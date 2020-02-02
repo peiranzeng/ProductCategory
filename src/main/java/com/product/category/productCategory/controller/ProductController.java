@@ -34,7 +34,7 @@ public class ProductController {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProductController.class);
 	
-	@GetMapping(value = "/products/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Resource<Product>> getProduct(@PathVariable("id") String id) {
 
 		LOGGER.debug("Fetching Product with id " + id);
@@ -59,6 +59,25 @@ public class ProductController {
 		
 		List<Product> products =
 	            productService.findByCategory(category);
+	        Link links[] = { };
+	        if (products.isEmpty()) {
+	            return new ResponseEntity<Resources<Resource<Product>>>(
+	                HttpStatus.NOT_FOUND);
+	        }
+	        List<Resource<Product>> list = new ArrayList<Resource<Product>>();
+	        addLinksToProduct(products, list);
+	        Resources<Resource<Product>> productRes =
+	            new Resources<Resource<Product>>(list, links);
+	        return new ResponseEntity<Resources<Resource<Product>>>(
+	            productRes, HttpStatus.OK);
+		
+	}
+	
+	@GetMapping(params = "text")
+	public ResponseEntity<Resources<Resource<Product>>> findProductsByText(@RequestParam("text") String text){
+		
+		List<Product> products =
+	            productService.findByText(text);
 	        Link links[] = { };
 	        if (products.isEmpty()) {
 	            return new ResponseEntity<Resources<Resource<Product>>>(
